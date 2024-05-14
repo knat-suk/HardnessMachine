@@ -3,15 +3,15 @@
 
 //LCD pins
 #define LED_PIN 13
-#define rs 51
-#define enable 53
-#define d4 52
-#define d5 50
-#define d6 48
-#define d7 46
-#define button 44
-#define compButton 20
-#define indentBUtton 18
+#define rs 43
+#define enable 45
+#define d4 47
+#define d5 49
+#define d6 51
+#define d7 53
+#define button 39
+#define compButton 23
+#define indentBUtton 25
 
 // LCD defs
 LiquidCrystal lcd(rs, enable, d4, d5, d6, d7);
@@ -23,7 +23,7 @@ unsigned long startMillis;
 unsigned long currentMillis;
 unsigned long buttonCoolDown;
 unsigned long ledCoolDown;
-int lastInput;
+int lastInput;//=digitalRead(44);
 int buttonState = LOW;
 
 void lcdSetup(int machine_state) {
@@ -34,7 +34,6 @@ void lcdSetup(int machine_state) {
   // Initialize LED pin
   pinMode(LED_PIN, OUTPUT);
   pinMode(button, INPUT_PULLUP);
-  lastInput = digitalRead(44); // can't use macros defined button? 
 
   // Display initial information
   lcd.clear();
@@ -63,7 +62,6 @@ void lcdLoop(long init_time, int machine_state) {
       buttonCoolDown = millis();
     }
   }
-  lastInput = input;
 
   // Update LCD display based on machine state
   updateLCD(init_time, machine_state);

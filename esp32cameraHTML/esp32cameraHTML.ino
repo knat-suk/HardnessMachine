@@ -46,6 +46,8 @@ const char index_html[] PROGMEM = R"rawliteral(
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    h2 {text-align:center;}
+    p {text-align:center;}
     body { text-align:center; }
     .vert { margin-bottom: 10%; }
     .hori{ margin-bottom: 0%; }
@@ -53,14 +55,15 @@ const char index_html[] PROGMEM = R"rawliteral(
 </head>
 <body>
   <div id="container">
-    <h2>ESP32-CAM Last Photo</h2>
+    <h2>TESTMASTERS - ESP32 CAM Photos</h2>
     <p>It might take more than 5 seconds to capture a photo.</p>
     <p>
-      <button onclick="rotatePhoto();">ROTATE</button>
+      // <button onclick="rotatePhoto();">ROTATE</button>
       <button onclick="capturePhoto()">CAPTURE PHOTO</button>
       <button onclick="location.reload();">REFRESH PAGE</button>
     </p>
   </div>
+  <div>
   <div><img src="saved-photo" id="photo" width="70%"></div>
   <div><a href="saved-photo" download="camera_image"> download </a></div>
 </body>

@@ -1,4 +1,5 @@
 #include <Stepper.h>
+#include "load_cell.h"
 
 
 void motorSetup();
