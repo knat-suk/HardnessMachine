@@ -9,6 +9,7 @@
 bool off = false;
 int machine_state = 0;
 unsigned long init_time;
+unsigned long curr_millis;
 
 void stop() {
   while (off) {
@@ -21,6 +22,8 @@ void stop() {
 
 void setup() {
   Serial.begin(115200);
+  Serial.println("Machine is on");
+
   pinMode(ON_OFF_BUTTON, INPUT_PULLUP);
 
   // set up lcd
@@ -37,12 +40,13 @@ void setup() {
 
 void loop() {
   stop();
+  curr_millis = millis();
 
   // lcd loop
   lcdLoop(init_time, machine_state);
 
   // motor loop. Load cell is used when compressing
-  motorLoop(machine_state);
+  motorLoop(machine_state, curr_millis);
 
   // cameraSetup(); // take picture
   if (machine_state==5) {
@@ -50,7 +54,7 @@ void loop() {
       Serial.println("Run Python Script");
     }
     // Run camera
-    cameraExec(); // access image via esp32 access point
+    // cameraExec(); // access image via esp32 access point
     // program will run indefinitely, as long as esp32 webserver stays on
   }
   delay(2);

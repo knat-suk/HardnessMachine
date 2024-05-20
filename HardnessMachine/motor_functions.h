@@ -4,12 +4,12 @@
 
 void motorSetup();
 
-void motorLoop(int &machine_state);
+void motorLoop(int &machine_state, unsigned long curr_millis);
 
 void compress();
 
 void stopButton();
 
-void movePlatform();
+void movePlatform(int &machine_state);
 
 void returnToOriginalPosition();

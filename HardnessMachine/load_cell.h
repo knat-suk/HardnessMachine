@@ -2,4 +2,4 @@
 
 void loadCellCalibration();
 
-void loadCellCalculate();
+float loadCellCalculate();
