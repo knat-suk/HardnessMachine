@@ -41,6 +41,11 @@ boolean takeNewPhoto = false;
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
+#define RXp2 16
+#define TXp2 17
+
+double force = 0;
+
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
 <head>
@@ -55,16 +60,20 @@ const char index_html[] PROGMEM = R"rawliteral(
 </head>
 <body>
   <div id="container">
-    <h2>TESTMASTERS - ESP32 CAM Photos</h2>
+    <h2>TESTMASTERS - ESP32 CAM Photo</h2>
     <p>It might take more than 5 seconds to capture a photo.</p>
     <p>
       // <button onclick="rotatePhoto();">ROTATE</button>
       <button onclick="capturePhoto()">CAPTURE PHOTO</button>
       <button onclick="location.reload();">REFRESH PAGE</button>
+      <button onclick="displayForce();">SHOW FORCE</button>
     </p>
   </div>
   <div>
   <div><img src="saved-photo" id="photo" width="70%"></div>
+  <div color = blue>
+    <div id="force" width = "50%" height = "50%"> %force% {force} </div>
+  </div>
   <div><a href="saved-photo" download="camera_image"> download </a></div>
 </body>
 <script>
@@ -82,22 +91,53 @@ const char index_html[] PROGMEM = R"rawliteral(
     img.style.transform = "rotate(" + deg + "deg)";
   }
   function isOdd(n) { return Math.abs(n % 2) == 1; }
-  // function getPhoto() {
-  //   var xhr = new XMLHttpRequest();
-  //   xhr.open('GET', "/download", true);
-  //   xhr.send();
-  // }
   function getPhoto() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', "/download", true);
     xhr.send();
   }
+  function displayForce() {
+    var element = document.getElementById("force");
+    var text = element.innerText;
+    var newText = text.replace("force", force);
+    element.innerText = newText;
+  }
 </script>
 </html>)rawliteral";
+
+bool receiving_data = false
+bool new_data = false;
+
+String processor(const String& var) // function for sending 
+{
+  if(var == "force")
+    return F(force);
+  return String();
+}
 
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
+  Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
+  while (!Serial2.available()) {
+    continue;
+  }
+  char input = Serial2.read();
+  while (input != "a") {
+    input = Serial2.read();
+  }
+  while (Serial2.available() && new_data == false) {
+    input = Serial2.read();
+    if (receiving_data = true) {
+      if (input != "a") {
+        force = atof(input);
+        new_data = true;
+      }
+    }
+    else if (input == "a") {
+      receiving_data = true;
+    }
+  }
 
   // Connect to Wi-Fi
   if (!WiFi.softAP(ssid)) {
@@ -166,9 +206,12 @@ void setup() {
     ESP.restart();
   }
 
+
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/html", index_html);
+    request->send(SPIFFS, "/index.html", String(), false, processor);
+    request->send(SPIFFS, force, "text/plain", false);
   });
 
   server.on("/capture", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -186,6 +229,7 @@ void setup() {
 
   // Start server
   server.begin();
+  Serial.write(FILE_PHOTO);
 
 }
 
