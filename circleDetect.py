@@ -17,7 +17,6 @@ import sys
 #         exec(import_packages[package])
 
 # TEST
-import serial
 import cv2
 import numpy as np
 import os

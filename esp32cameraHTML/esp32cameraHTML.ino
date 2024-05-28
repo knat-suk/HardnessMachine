@@ -10,15 +10,16 @@
 #include <StringArray.h>
 #include <SPIFFS.h>
 #include <FS.h>
-
+#include <string.h>
 // Replace with your network credentials
-const char* ssid = "REPLACE_WITH_YOUR_SSID";
+const char* ssid = "HardnessMachineAP";
 const char* password = "REPLACE_WITH_YOUR_PASSWORD";
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
 boolean takeNewPhoto = false;
+//15.044 hor cm per 22 cm away from screen, y = 15.044/22 * x
 
 // Photo File Name to save in SPIFFS
 #define FILE_PHOTO "/photo.jpg"
@@ -44,40 +45,49 @@ boolean takeNewPhoto = false;
 #define RXp2 16
 #define TXp2 17
 
-double force = 0;
+double force = 100;
 
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1">
   <style>
     h2 {text-align:center;}
     p {text-align:center;}
     body { text-align:center; }
     .vert { margin-bottom: 10%; }
     .hori{ margin-bottom: 0%; }
+    button {font-size: 5vw; padding: 5px;}
+    div {padding: 5px;}
   </style>
 </head>
 <body>
-  <div id="container">
-    <h2>TESTMASTERS - ESP32 CAM Photo</h2>
+  <div id="container" style="background-color:grey;">
+    <div> 
+      <h2>&#9881 TESTMASTERS - Photos</h2>
+    </div>
     <p>It might take more than 5 seconds to capture a photo.</p>
     <p>
-      // <button onclick="rotatePhoto();">ROTATE</button>
+    <div>
+      <button onclick="rotatePhoto();">ROTATE</button>
       <button onclick="capturePhoto()">CAPTURE PHOTO</button>
+    </div>
+    <div>
       <button onclick="location.reload();">REFRESH PAGE</button>
       <button onclick="displayForce();">SHOW FORCE</button>
+    </div>
     </p>
   </div>
   <div>
   <div><img src="saved-photo" id="photo" width="70%"></div>
   <div color = blue>
-    <div id="force" width = "50%" height = "50%"> %force% {force} </div>
+    <div id="force" width = "50%" height = "50%"> Reading = [] </div>
   </div>
   <div><a href="saved-photo" download="camera_image"> download </a></div>
 </body>
 <script>
   var deg = 0;
+  var force = 100;
   function capturePhoto() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', "/capture", true);
@@ -99,45 +109,56 @@ const char index_html[] PROGMEM = R"rawliteral(
   function displayForce() {
     var element = document.getElementById("force");
     var text = element.innerText;
-    var newText = text.replace("force", force);
+    var newText = text.replace("[]", force);
     element.innerText = newText;
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', "/get_force", true);
+    xhr.send();
   }
 </script>
 </html>)rawliteral";
 
-bool receiving_data = false
+bool receiving_data = false;
 bool new_data = false;
 
 String processor(const String& var) // function for sending 
 {
-  if(var == "force")
-    return F(force);
+  if(var == "force") {
+    return String(force);
+  }
   return String();
 }
 
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
-  Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
-  while (!Serial2.available()) {
-    continue;
+  int start = 1;
+  while(start!=10) {
+    Serial.println("Off");
+    start = Serial.readString().compareTo("on");
+    Serial.println(start);
   }
-  char input = Serial2.read();
-  while (input != "a") {
-    input = Serial2.read();
-  }
-  while (Serial2.available() && new_data == false) {
-    input = Serial2.read();
-    if (receiving_data = true) {
-      if (input != "a") {
-        force = atof(input);
-        new_data = true;
-      }
-    }
-    else if (input == "a") {
-      receiving_data = true;
-    }
-  }
+  Serial.println("On");
+  // Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
+  // while (!Serial2.available()) {
+  //   continue;
+  // }
+  // String input = String(Serial2.read());
+  // while (input != "a") {
+  //   input = Serial2.read();
+  // }
+  // while (Serial2.available() && new_data == false) {
+  //   input = Serial2.read();
+  //   if (receiving_data = true) {
+  //     if (input != "a") {
+  //       force = atof(input.c_str());
+  //       new_data = true;
+  //     }
+  //   }
+  //   else if (input == "a") {
+  //     receiving_data = true;
+  //   }
+  // }
 
   // Connect to Wi-Fi
   if (!WiFi.softAP(ssid)) {
@@ -210,13 +231,13 @@ void setup() {
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/html", index_html);
-    request->send(SPIFFS, "/index.html", String(), false, processor);
-    request->send(SPIFFS, force, "text/plain", false);
+    // request->send(200, "text/html", String(), false, processor);
   });
 
   server.on("/capture", HTTP_GET, [](AsyncWebServerRequest * request) {
     takeNewPhoto = true;
     request->send_P(200, "text/plain", "Taking Photo");
+    request->send_P(200, "text/html", index_html);
   });
 
   server.on("/saved-photo", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -225,6 +246,11 @@ void setup() {
 
   server.on("/download", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send_P(200, "text/plain", "Downloaded");
+  });
+
+  server.on("/get_force", HTTP_GET, [](AsyncWebServerRequest * request) {
+    Serial.write(long(force));
+    request->send(200, "text/html", "Force = " +  String(force));
   });
 
   // Start server

@@ -57,15 +57,11 @@ void loop() {
       Serial.println("Run Python Script");
     }
     // calculate avg_force
-    for (int i=0; i<500; i++) {
-      result_force += force[i];
-    }
-    result_force /= 500;
 
     // Run camera
     cameraExec(); // access image via esp32 access point
     Serial.println("Activate camera");
-    Serial.println(result_force); // send force
+    // Serial.println(result_force); // send force
     machine_state+=1;
     // program will run indefinitely, as long as esp32 webserver stays on
   }

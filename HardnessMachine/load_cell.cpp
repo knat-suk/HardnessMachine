@@ -27,6 +27,7 @@ float loadCellCalculate() {
   float load = scale.get_units(10); // Read the load cell value in raw units
   // Print the load cell value to the serial monitor
   // Serial.print("load: ");
+  
   Serial.println(abs(load));
   return load;
 }

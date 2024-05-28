@@ -24,12 +24,15 @@
 
 // variables
 unsigned long prevMillis;
+double force[500] = {0}; 
+double result_force;
 
 // be aware of swapping inputs
 MultiStepper steppers;
 
 AccelStepper stepper1(AccelStepper::FULL4WIRE, 22, 2, 3, 4);
 AccelStepper stepper2(AccelStepper::FULL4WIRE, 5, 6, 7, 8);
+AccelStepper stepper3(AccelStepper::FULL4WIRE, 22, 24, 26, 28);
 Stepper motor1(STEPS_PER_REV, 22, 2, 3, 4); // motor for platform
 Stepper motor2(STEPS_PER_REV, 5, 6, 7, 8); // motor for indentation
 
@@ -39,13 +42,13 @@ Print& operator<<(Print& printer, T value)
     printer.print(value);
     return printer;
 }
-
 // FUNCTIONS
 void motorSetup() {
   // motor1.setSpeed(100);
   // motor2.setSpeed(100);
   stepper1.setMaxSpeed(100);
   stepper2.setMaxSpeed(100);
+  stepper3.setMaxSpeed(100);
   steppers.addStepper(stepper1);
   steppers.addStepper(stepper2);
 
@@ -53,7 +56,7 @@ void motorSetup() {
   pinMode(indentButton, INPUT_PULLUP);
   result_force = 0.0;
 }
-bool record_time = false
+bool record_time = false;
 void motorLoop(int &machine_state, unsigned long curr_millis ) {
   // Motor operations
   if (machine_state==1 || machine_state==3) {
@@ -62,17 +65,26 @@ void motorLoop(int &machine_state, unsigned long curr_millis ) {
     machine_state += 1;
     delay(1000);
   }
+  else if (machine_state==3) {
+    indent(machine_state);
+  }
 
   else if (machine_state==0 || machine_state==2 || machine_state==4) {
     Serial << "State: " << machine_state << '\n';
     movePlatform(machine_state);
   }
-  int input3 = digitalRead();
+  else if (machine_state==5) {
+    for (int i=0; i<500; i++) {
+      result_force += force[i];
+    }
+    result_force /= 500;
+    machine_state+=1;
+  }
+  int input3 = digitalRead(31);
 }
 
 // Load Force 
 bool compressFinish = false;
-double force[500] = {0}; 
 int i=0;
 
 //actuator
@@ -89,9 +101,13 @@ void compress() {
 }
 
 bool moveFinish = false;
-long positions[3][2] = {{200,200},{400,400},{600,600}};
-void movePlatform(int& machine_state) { // move sample platform
-    steppers.moveTo(positions[(int) machine_state/2]);
+long indentPos[2][2] = {{600,600},{0,0}};
+long positions[3] = {300, 600, 900}; 
+void movePlatform(int& machine_state) {
+  stepper3.moveTo(positions[(int) machine_state/2]);
+}
+void indent(int& machine_state) { // move sample platform
+    steppers.moveTo(indentPos[0]);
     Serial.println((int) machine_state/2);
     steppers.runSpeedToPosition();
     stopButton();
@@ -120,6 +136,6 @@ void stopButton() { // for signalling when to stop compression/indentation
 }
 
 void test() {
-  actuator = true
+  actuator = true;
 }
 
