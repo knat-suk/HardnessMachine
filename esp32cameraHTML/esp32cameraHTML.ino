@@ -133,11 +133,16 @@ void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
   int start = 1;
-  while(start!=10) {
-    Serial.println("Off");
-    start = Serial.readString().compareTo("on");
-    Serial.println(start);
+  // while(start!=10) {
+  //   Serial.println("Off");
+  //   start = Serial.readString().compareTo("on");
+  //   Serial.println(start);
+  // }
+  int start = digitalRead(RXp2);
+  while (start == 1) {
+    start = digitalRead(RXp2);
   }
+
   Serial.println("On");
   // Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
   // while (!Serial2.available()) {

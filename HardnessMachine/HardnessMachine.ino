@@ -7,24 +7,26 @@
 
 // Machine states: 0 = move sample, 1 = compress sample and revert, 2 = move sample, 3 = indent sample, 4 = move sample. 5 = take picture
 #define ON_OFF_BUTTON 39
-bool state = false; // false = on, true = off
+#define tx 1
+#define rx 0
+
 int machine_state = 0;
 unsigned long init_time;
 unsigned long curr_millis;
 
 void stop() {
-  int input = digitalRead(ON_OFF_BUTTON);
-  Serial.println(input);
-  while (state) {
-    if (input==0) {
-      state = false;
-    }
-  }
+  // int input = digitalRead(ON_OFF_BUTTON); // 1 = on, 0 = off
+  // Serial.println(input);
+  // while (input==0) {
+  //   int input = digitalRead(ON_OFF_BUTTON);
+  // }
 }
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Machine is on");
+  pinMode(tx, OUTPUT);
+  pinMode(rx, INPUT_PULLUP);
 
   pinMode(ON_OFF_BUTTON, INPUT_PULLUP);
 
@@ -53,14 +55,13 @@ void loop() {
   // cameraSetup(); // take picture
   if (machine_state==5) {
     Serial.println("State: 5");
-    if (Serial.available() > 0) {
-      Serial.println("Run Python Script");
-    }
+    Serial.println("Run Python Script");
     // calculate avg_force
-
     // Run camera
     cameraExec(); // access image via esp32 access point
-    Serial.println("Activate camera");
+    digitalWrite(tx, HIGH);
+    Serial.write("On");
+
     // Serial.println(result_force); // send force
     machine_state+=1;
     // program will run indefinitely, as long as esp32 webserver stays on
