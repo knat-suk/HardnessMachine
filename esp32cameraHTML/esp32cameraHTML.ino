@@ -17,6 +17,7 @@ const char* password = "REPLACE_WITH_YOUR_PASSWORD";
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
+//192.168.4.1
 
 boolean takeNewPhoto = false;
 //15.044 hor cm per 22 cm away from screen, y = 15.044/22 * x
@@ -44,6 +45,7 @@ boolean takeNewPhoto = false;
 
 #define RXp2 16
 #define TXp2 17
+#define sPin 16
 
 double force = 100;
 
@@ -132,16 +134,20 @@ String processor(const String& var) // function for sending
 void setup() {
   // Serial port for debugging purposes
   Serial.begin(115200);
-  int start = 1;
+  // pinMode(sPin, INPUT_PULLUP);
+  // int start = 1;
   // while(start!=10) {
   //   Serial.println("Off");
   //   start = Serial.readString().compareTo("on");
   //   Serial.println(start);
   // }
-  int start = digitalRead(RXp2);
-  while (start == 1) {
-    start = digitalRead(RXp2);
-  }
+  // int start = digitalRead(sPin);
+  // while (start == 1) {
+  //   start = digitalRead(sPin);
+  //   Serial.println("waiting for signal...");
+  //   Serial.println(start);
+  //   delay(2);
+  // }
 
   Serial.println("On");
   // Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
