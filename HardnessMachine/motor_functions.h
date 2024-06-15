@@ -3,7 +3,7 @@
 
 extern double result_force;
 
-extern int speed;
+extern int interval;
 
 void motorSetup();
 
@@ -15,10 +15,12 @@ void compress();
 
 void indent(int &machine_state);
 
-void step(int steps, int state, int delay, int step1, int dir1, int step2, int dir2);
+void step(int steps, int state, int delay, int step1, int dir1);
 
 void stopButton();
 
 void resetMotors();
 
 void test();
+
+void changeInterval(double num);

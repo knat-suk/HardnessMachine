@@ -203,11 +203,13 @@ void lcdDisplayForce(double result) {
   lcd.print(result, 4);
 }
 
-String menus[3] = {"home", "set", "reset"};
+String menus[3] = {"Home", "Settings", "Reset"};
 void lcdMenu(int state, int speed) {
   lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print(menus[state]);
+  // lcd.setCursor(0, 0);
+  // lcd.print(menus[state]+ " <==");
+  lcd.setCursor(0, 1);
+  lcd.print(menus[(state+1)%3]);
   if (state==1) {
     lcd.setCursor(0, 1);
     lcd.print(speed);
