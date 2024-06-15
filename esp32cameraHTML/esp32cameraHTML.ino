@@ -54,38 +54,62 @@ const char index_html[] PROGMEM = R"rawliteral(
 <head>
   <meta name="viewport" charset="UTF-8" content="width=device-width, initial-scale=1">
   <style>
-    h2 {text-align:center;}
-    p {text-align:center;}
+    h2 {text-align:center; font-size:4vw; font-family:verdana}
+    p {text-align:center; font-size:2vw; color:white}
     body { text-align:center; }
     .vert { margin-bottom: 10%; }
     .hori{ margin-bottom: 0%; }
-    button {font-size: 5vw; padding: 5px;}
+    button {font-size: 2vw; padding: 4px; border-radius: 8px;}
     div {padding: 5px;}
+    .topnav {background-color: #333; overflow: hidden; display:flex; justify-content:space-between;}
+    .topnav a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+ 
+}
+    .topnav a.active {
+      background-color: #04AA6D;
+      color: white;
+    }
+    .topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
   </style>
 </head>
-<body>
-  <div id="container" style="background-color:grey;">
-    <div> 
-      <h2>&#9881 TESTMASTERS - Photos</h2>
+<body style="background-color:green;">
+  <div>
+  <div id="container" style="background-color:green;">
+  	<div class="topnav"> 
+    	<div></div>
+    	<a> Home </a>
+        <a> About </a>
+    	<div></div>
+        <a> Contact </a>
+        <a> Store </a>
+    	<div></div>
     </div>
-    <p>It might take more than 5 seconds to capture a photo.</p>
+    <div style="color:white"> 
+      <h2>&#9881 TESTMASTERS &#9881</h2>
+    </div>
+    <p>Instructions: Wait 5 seconds then refresh page after capturing photo</p>
     <p>
-    <div>
-      <button onclick="rotatePhoto();">ROTATE</button>
-      <button onclick="capturePhoto()">CAPTURE PHOTO</button>
-    </div>
-    <div>
-      <button onclick="location.reload();">REFRESH PAGE</button>
-      <button onclick="displayForce();">SHOW FORCE</button>
-    </div>
+      <div>
+        <button onclick="capturePhoto()">CAPTURE PHOTO</button>
+
+        <button onclick="location.reload();">REFRESH PAGE</button>
+      </div>
     </p>
   </div>
-  <div>
-  <div><img src="saved-photo" id="photo" width="70%"></div>
-  <div color = blue>
-    <div id="force" width = "50%" height = "50%"> Reading = [] </div>
-  </div>
-  <div><a href="saved-photo" download="camera_image"> download </a></div>
+  <img src="saved-photo" id="photo" style="border:5px solid #000000" width="70%"></div>
+
+  <button>
+  	<div><a href="saved-photo" download="camera_image"> Download IMG </a></div>
+  </button>
 </body>
 <script>
   var deg = 0;

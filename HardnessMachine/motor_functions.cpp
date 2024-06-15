@@ -121,7 +121,7 @@ void motorLoop(int &machine_state, unsigned long curr_millis ) {
     Serial.print("force is = ");
     Serial.println(result_force);
   }
-  else if (machine_state==5) {
+  else if (machine_state==6) {
     return;
   }
   machine_state += 1;
@@ -193,8 +193,13 @@ void step(int steps, int state, int delay_time, int step_1, int dir_1, int step_
 }
 
 void resetMotors() { // for resetting all motors
-  long pos[2] = {0,0};
-  steppers.moveTo(pos);
+  step(1000, LOW, speed, step_1, dir_1, step_2, dir_2);
+  step(1200, LOW, speed, step_3, dir_3, step_3, dir_3);
+  //
+  digitalWrite(actuator1, LOW);
+  digitalWrite(actuator2, HIGH);
+  delay(4000);
+  digitalWrite(actuator2, LOW);
 }
 
 void stopButton() { // for signalling when to stop compression/indentation

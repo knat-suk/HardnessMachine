@@ -13,4 +13,6 @@ void toggleMachineState();
 
 void updateLCD(long init_time, int machine_state);
 
+void lcdMenu(int state, int speed);
+
 void updateLED();

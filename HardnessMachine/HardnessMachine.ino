@@ -7,6 +7,9 @@
 
 // Machine states: 0 = move sample, 1 = compress sample and revert, 2 = move sample, 3 = indent sample, 4 = move sample. 5 = take picture
 #define ON_OFF_BUTTON 39
+const int sw = 42;
+const int x = 38;
+const int y = 40;
 #define tx 1
 #define rx 0
 
@@ -14,24 +17,74 @@ int machine_state = 0;
 unsigned long init_time;
 unsigned long curr_millis;
 
-void stop() {
-  // int input = digitalRead(ON_OFF_BUTTON); // 1 = on, 0 = off
-  // Serial.println(input);
-  // while (input==0) {
-  //   int input = digitalRead(ON_OFF_BUTTON);
-  // }
+int state = 0; // 0 = go, 1 = user menu. 2 = settings, 3 = reset
+
+void menu(int &state) {
+  double joy_stick_delay = 200;
+  int curr_input = millis();
+  int prev_input = millis();
+  int y_state = 0;
+  while (state!=-1) {
+    curr_input = millis();
+    lcdMenu(state, speed);
+    int x_read = analogRead(x);
+    int y_read = analogRead(y);
+
+    if (curr_input-prev_input > 150) {
+      if (x_read > 768) {
+        state = (state+1) % 3;
+        prev_input = curr_input;
+      }
+      else if (x_read < 256) {
+        state = (state-1) % 3;
+        prev_input = curr_input;
+      }
+      switch (state) {
+        case 0:
+          if (sw==0) {
+            switch (y_read) {
+              case 0: //low torque
+                speed = 1200;
+                break;
+              case 1: //medium torque
+                speed = 1000;
+                break;
+              case 2: //high torque
+                speed = 700;
+                break;
+            }
+            setup();
+            state = -1;
+          }
+          break;
+        case 1: //settings
+          if (y_read > 768) {
+            y_state = (y_state+1) % 3;
+            prev_input = curr_input;
+          }
+          else if (y_read < 256) {
+            y_state = (y_state-1) % 3;
+            prev_input = curr_input;
+          }
+        case 2: //reset
+          resetMotors();
+      }
+    }
+
+  }
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(115200); //57600
   Serial.println("Machine is on");
   pinMode(tx, OUTPUT);
   pinMode(rx, INPUT_PULLUP);
 
   pinMode(ON_OFF_BUTTON, INPUT_PULLUP);
-  pinMode(12, OUTPUT);
+  pinMode(12, OUTPUT); // camera
+  pinMode(sw, INPUT);
+  digitalWrite(sw, HIGH);
   digitalWrite(tx, LOW);
-
 
   // set up lcd
   lcdSetup(machine_state);
@@ -51,8 +104,10 @@ void setup() {
 }
 
 void loop() {
-  stop();
+
   curr_millis = millis();
+
+  menu(state);
 
   // lcd loop
   lcdLoop(init_time, machine_state);
@@ -63,10 +118,6 @@ void loop() {
   if (machine_state==4) {  // cameraSetup(); // take picture
     Serial.println("State: 4");
     Serial.println("Run Python Script");
-    // calculate avg_force
-    // Run camera
-    // digitalWrite(13,HIGH);
-    digitalWrite(tx, HIGH);
     digitalWrite(12, HIGH); // turn on camera to access image via esp32 access point
 
     Serial.write("On");

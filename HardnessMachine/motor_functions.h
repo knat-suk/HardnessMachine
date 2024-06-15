@@ -3,6 +3,8 @@
 
 extern double result_force;
 
+extern int speed;
+
 void motorSetup();
 
 void motorLoop(int &machine_state, unsigned long curr_millis);
@@ -17,6 +19,6 @@ void step(int steps, int state, int delay, int step1, int dir1, int step2, int d
 
 void stopButton();
 
-void returnToOriginalPosition();
+void resetMotors();
 
 void test();

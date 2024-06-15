@@ -203,6 +203,17 @@ void lcdDisplayForce(double result) {
   lcd.print(result, 4);
 }
 
+String menus[3] = {"home", "set", "reset"};
+void lcdMenu(int state, int speed) {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(menus[state]);
+  if (state==1) {
+    lcd.setCursor(0, 1);
+    lcd.print(speed);
+  }
+}
+
 void updateLED() {
   digitalWrite(LED_PIN, machineOn ? HIGH : LOW);
 }
