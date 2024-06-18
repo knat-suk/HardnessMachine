@@ -1,4 +1,5 @@
-#include "HX711.h"
+#include <HX711_ADC.h>
+#include <EEPROM.h>
 
 void loadCellCalibration();
 

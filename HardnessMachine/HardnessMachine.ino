@@ -16,20 +16,22 @@ int state = 0; // 0 = go, 1 = user menu. 2 = settings, 3 = reset
 
 
 void setup() {
-  Serial.begin(115200); //57600
+  Serial.begin(57600); //57600
   Serial.println("Machine is on");
 
   // tftSetup(state);
-  menuSetup(state);
+  // menuSetup(state);
 
   // // set up lcd
   lcdSetup(machine_state);
+  menuSetup(state);
+
 
   // //set up motor
-  // motorSetup();
+  motorSetup();
 
   // // set up load cell 
-  // loadCellCalibration();
+  loadCellCalibration();
 }
 
 void loop() {
@@ -42,7 +44,7 @@ void loop() {
   lcdLoop(curr_millis, machine_state);
 
   // motor loop. Load cell is used when compressing
-  // motorLoop(machine_state, curr_millis);
+  motorLoop(machine_state, curr_millis);
 
   if (machine_state==4) {  // cameraSetup(); // take picture
     Serial.println("State: 4");
@@ -53,7 +55,7 @@ void loop() {
     lcdDisplayForce(result_force);
 
     // Serial.println(result_force); // send force
-    machine_state+=1;
+    // machine_state+=1;
     // program will run indefinitely, as long as esp32 webserver stays on
   }
   else if (machine_state==5) {

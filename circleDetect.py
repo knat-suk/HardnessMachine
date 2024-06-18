@@ -61,64 +61,64 @@ def DetectCircle(file_name):
     cv2.putText(image, area_title, (coords[0]-200, max(0,coords[1]+15)), font, 1, colour, 1)
     cv2.putText(image, radius_title, (coords[0]-200, max(0,coords[1]+30)), font, 1, colour, 1)
     # going through all contours
-    # for i, contour in enumerate(contours):
-    #     if i ==0: # first shape, i.e. the whole shape
-    #         continue
-    #     # epsilon = 0.01 * cv2.arcLength(contour, True)
-    #     # approx = cv2.approxPolyDP(contour, epsilon, True)
+    for i, contour in enumerate(contours):
+        if i ==0: # first shape, i.e. the whole shape
+            continue
+        epsilon = 0.01 * cv2.arcLength(contour, True)
+        approx = cv2.approxPolyDP(contour, epsilon, True)
         
-    # #     #trying blob fit
-    # #     # params = cv2.SimpleBlobDetector_Params()
-    # #     # params.minThreshold = 127
-    # #     # params.maxThreshold = 255
-    # #     # params.filterByArea = True
-    # #     # params.minArea = 1500
-    # #     # params.filterByCircularity = True
-    # #     # params.minCircularity = 0.1
-    # #     # params.filterByConvexity = True
-    # #     # params.minConvexity = 0.87
-    # #     # params.filterByInertia = True
-    # #     # params.minInertiaRatio = 0.01
+    #     #trying blob fit
+    #     # params = cv2.SimpleBlobDetector_Params()
+    #     # params.minThreshold = 127
+    #     # params.maxThreshold = 255
+    #     # params.filterByArea = True
+    #     # params.minArea = 1500
+    #     # params.filterByCircularity = True
+    #     # params.minCircularity = 0.1
+    #     # params.filterByConvexity = True
+    #     # params.minConvexity = 0.87
+    #     # params.filterByInertia = True
+    #     # params.minInertiaRatio = 0.01
 
-    # #     # ver = (cv2.__version__).split('.')
-    # #     # if int(ver[0]) < 3:
-    # #     #     detector = cv2.SimpleBlobDetector(params)
-    # #     # else:
-    # #     #     detector = cv2.SimpleBlobDetector_create(params)
+    #     # ver = (cv2.__version__).split('.')
+    #     # if int(ver[0]) < 3:
+    #     #     detector = cv2.SimpleBlobDetector(params)
+    #     # else:
+    #     #     detector = cv2.SimpleBlobDetector_create(params)
 
-    # #     # points = detector.detect(thresh)
+    #     # points = detector.detect(thresh)
 
-    # #     # display_points = cv2.drawKeypoints(thresh,points,np.array([]),(255,0,0), cv2.DrawMatchesFlags_DRAW_RICH_KEYPOINTS)
+    #     # display_points = cv2.drawKeypoints(thresh,points,np.array([]),(255,0,0), cv2.DrawMatchesFlags_DRAW_RICH_KEYPOINTS)
 
-    # #     # cv2.imshow("bruh",display_points)
-    # #     (x,y), radius = cv2.minEnclosingCircle(contour)
-    # #     circle = cv2.circle(thresh, (int(x),int(y)), int(radius), (0,255,0), 2)
-    # #     cv2.imshow("bruh", circle)
+    #     # cv2.imshow("bruh",display_points)
+    #     (x,y), radius = cv2.minEnclosingCircle(contour)
+    #     circle = cv2.circle(thresh, (int(x),int(y)), int(radius), (0,255,0), 2)
+    #     cv2.imshow("bruh", circle)
 
-    #     area = cv2.contourArea(contour)
-    #     print("image: ", file_name,", area = ", area)
-    #     print("radius = ", np.sqrt(area/np.pi))
-    #     if area>6000:
-    #         cv2.drawContours(image, contour, -1, (0,0,255), 4)
+        area = cv2.contourArea(contour)
+        print("image: ", file_name,", area = ", area)
+        print("radius = ", np.sqrt(area/np.pi))
+        if area>6000:
+            cv2.drawContours(image, contour, -1, (0,0,255), 4)
 
-    #     # x,y,w,h = cv2.boundingRect(approx)
-    #     # x_mid = int(x+w/2)
-    #     # y_mid = int(y+h/2)
+        # x,y,w,h = cv2.boundingRect(approx)
+        # x_mid = int(x+w/2)
+        # y_mid = int(y+h/2)
 
-    #     # coords = (x_mid, y_mid)
-    #     # colour = (0,0,0)
-    #     # font = cv2.FONT_HERSHEY_PLAIN
+        # coords = (x_mid, y_mid)
+        # colour = (0,0,0)
+        # font = cv2.FONT_HERSHEY_PLAIN
 
-    #     # if len(approx>10):
-    #     #     cv2.putText(image,"circle", coords, font, 1, colour, 1)
-    #     # if len(approx<5):
-    #     #     cv2.putText(image,"square", coords, font, 1, colour, 1)
+        # if len(approx>10):
+        #     cv2.putText(image,"circle", coords, font, 1, colour, 1)
+        if len(approx<5):
+            cv2.putText(image,"square", coords, font, 1, colour, 1)
 
     cv2.imshow("output", image)
     cv2.waitKey(0)
 
 for files in os.listdir("Images"):
-    if files.endswith("bmp"):
+    if files.endswith("jpg"):
         DetectCircle(files)
     else:
         print(os.getcwd())

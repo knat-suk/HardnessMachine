@@ -21,6 +21,8 @@ void stopButton();
 
 void resetMotors();
 
+void moveManual();
+
 void test();
 
 void changeInterval(double num);

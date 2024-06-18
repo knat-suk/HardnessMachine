@@ -7,55 +7,28 @@
 #include <Arduino.h>
 
 // motor pins and steps
-// #define M1_STEP_1 22
-// #define M1_STEP_2 2
-// #define M1_DIR_1 3
-// #define M1_DIR_2 4
-// #define M2_STEP_1 5
-// #define M2_STEP_2 6
-// #define M2_DIR_1 7
-// #define M2_DIR_2 8
-// #define M3_STEP_1 9
-// #define M3_STEP_2 10
-// #define M3_DIR_1 11
-// #define M3_DIR_2 12
-#define compButton 23
-#define indentButton 25
-
 // const int step_1 = 22;
 // const int dir_1 = 2;
-const int step_1 = 8; // platform
-const int dir_1 = 9;
-const int step_2 = 6; // indentor
-const int dir_2 = 7;
+const int step_1 = 6; // platform
+const int dir_1 = 7;
+const int step_2 = 4; // indentor
+const int dir_2 = 5;
 
-#define actuator1 33
-#define actuator2 35
+const int switch_up = 9;
+const int switch_down = 8;
+
+#define actuator1 2
+#define actuator2 3
 #define STEPS_PER_REV 200 // motor steps 64 for 28by
 // 0.2 cm p rev, full length 34.0 cm 
 
 // variables
 unsigned long prevMillis;
-long position[3] = {900, 5500, 6450}; 
+long position[3] = {500, 5900, 1500}; // base 
 double force[500] = {0}; 
 int n = 10; // n is number of force measurements
 double result_force;
-int interval = 2000;
-
-// be aware of swapping inputs
-MultiStepper steppers;
-MultiStepper stepperNo3;
-
-// AccelStepper stepper1(AccelStepper::FULL4WIRE, 22, 2, 3, 4);
-// AccelStepper stepper2(AccelStepper::FULL4WIRE, 5, 6, 7, 8);
-// AccelStepper stepper3(AccelStepper::FULL4WIRE, 24, 26, 28, 30);
-
-AccelStepper stepper1(AccelStepper::DRIVER, 22, 2);
-AccelStepper stepper2(AccelStepper::DRIVER, 22, 2);
-AccelStepper stepper3(AccelStepper::DRIVER, 3, 4);
-// Stepper motor1(STEPS_PER_REV, 22, 2, 3, 4); // motor for platform
-// Stepper motor2(STEPS_PER_REV, 5, 6, 7, 8); // motor for indentation
-// Stepper motor3(STEPS_PER_REV, 24, 26, 28, 30);
+int interval = 750;
 
 template <typename T>
 Print& operator<<(Print& printer, T value)
@@ -63,6 +36,7 @@ Print& operator<<(Print& printer, T value)
     printer.print(value);
     return printer;
 }
+
 // FUNCTIONS
 void motorSetup() {
   pinMode(step_1, OUTPUT);
@@ -71,43 +45,47 @@ void motorSetup() {
   pinMode(dir_2, OUTPUT);
   pinMode(actuator1, OUTPUT);
   pinMode(actuator2, OUTPUT);
+  pinMode(switch_up, INPUT_PULLUP);
+  pinMode(switch_down, INPUT_PULLUP);
+  digitalWrite(step_1,LOW);
+  digitalWrite(step_2,LOW);
+
   result_force = 0.0;
-  step(1000, HIGH, 700, step_2, dir_2);
-  step(1000, LOW, 700, step_2, dir_2);
-  step(1000, HIGH, 700, step_1, dir_1);
-  step(1000, LOW, 700, step_1, dir_1);
 }
+
 bool record_time = false;
 void motorLoop(int &machine_state, unsigned long curr_millis ) {
-  // Motor operations
+
+
   if (machine_state==1) { // compress
     Serial << "State: " << machine_state << '\n';
     Serial << "Compress" <<'\n';
     compress();
   }
 
-  else if (machine_state==0 || 2 || 4) { // compress
+  else if (machine_state==0 || 2 || 4) { // move
     Serial << "State: " << machine_state << '\n';
     Serial << "Move" <<'\n';
 
     movePlatform(machine_state);
   }
 
-  else if (machine_state==3) {
+  else if (machine_state==3) { // indent
     Serial << "State: " << machine_state << '\n';
     Serial << "Indent" <<'\n';
     indent(machine_state);
     Serial.println("Finished indenting");
     Serial.println("Calculating force...");
-
-    // for (int i=0; i<n; i++) {
-    //   result_force += abs(force[i]);//*7.9153/0.6;
-    //   Serial.println(force[i]);
-    // }
-    // Serial.println(result_force);
-    // result_force /= n;
-    // Serial.println("Force (g) = ");
-    // Serial.println(result_force);
+    for (int i=0; i<n; i++) {
+      result_force += abs(force[i]);//*7.9153/0.6;
+      Serial.print(i);
+      Serial.print(" = ");
+      Serial.println(force[i]);
+    }
+    Serial.println(result_force);
+    result_force /= n;
+    Serial.println("Force (g) = ");
+    Serial.println(result_force);
   }
   else if (machine_state==5) {
     Serial.print("force is = ");
@@ -119,15 +97,10 @@ void motorLoop(int &machine_state, unsigned long curr_millis ) {
   machine_state += 1;
 }
 
-// Load Force 
-bool compressFinish = false;
-bool moveFinish = false;
 int i=0;
 
 //actuator
-bool actuator = false;
 void compress() {
-  actuator = true; // compress
   digitalWrite(actuator1, HIGH);
   digitalWrite(actuator2, LOW);
   delay(1650);
@@ -136,12 +109,11 @@ void compress() {
   delay(1650);
   digitalWrite(actuator2, LOW);
   delay(1000);
-
-  actuator = false;
 }
 
 void movePlatform(int& machine_state) {
   if (machine_state==4) {
+    delay(10000);
     step(position[int((machine_state)/2)], HIGH, interval, step_1, dir_1);
     return;
   }
@@ -149,14 +121,14 @@ void movePlatform(int& machine_state) {
 }
 
 void indent(int& machine_state) { // move sample platform
-    step(1000, HIGH, interval, step_2, dir_2);
+    step(700, LOW, interval, step_2, dir_2);
     Serial.println("Currently indenting");
     Serial.println("Measuring force");
     // while (i<n) { // record force every 5 milliseconds
     //   force[i] = loadCellCalculate();
     //   i+=1;
     // }
-    step(1000, LOW, interval, step_2, dir_2);
+    step(700, HIGH, interval, step_2, dir_2);
     Serial.println("Finished measuring");
 }
 
@@ -179,6 +151,29 @@ void resetMotors() { // for resetting all motors
   digitalWrite(actuator2, HIGH);
   delay(4000);
   digitalWrite(actuator2, LOW);
+}
+
+void moveManual() {
+  delay(200);
+  while (digitalRead(42)!=0) { // while sw is not pressed again
+    // int state_up = digitalRead(switch_up);
+    // int state_down = digitalRead(switch_down);
+    int state_up = analogRead(A0);
+    int state_down = analogRead(A1);
+
+    if (state_up > 700) {
+      step(1,HIGH,interval,step_1,dir_1);
+    }
+    else if (state_up < 600) {
+      step(1,LOW,interval,step_1,dir_1);
+    }
+    if (state_down > 700) {
+      step(1,HIGH,interval,step_2,dir_2);
+    }
+    else if (state_down<600) {
+      step(1,LOW,interval,step_2,dir_2);
+    }
+  }
 }
 void changeInterval(double num) {
   interval = num;

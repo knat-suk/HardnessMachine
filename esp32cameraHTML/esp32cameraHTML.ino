@@ -261,6 +261,7 @@ void setup() {
     Serial.printf("Camera init failed with error 0x%x", err);
     ESP.restart();
   }
+  capturePhotoSaveSpiffs();
 
 
   // Route for root / web page

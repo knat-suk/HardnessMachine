@@ -10,10 +10,10 @@ const int y = A0;
 #define TFT_CS 22
 #define TFT_RST 24
 #define TFT_DC 26
-#define TFT_MOSI 28
-#define TFT_CLK 30
+#define TFT_MOSI 51
+#define TFT_CLK 52
 #define TFT_LED 32
-#define TFT_MISO 34
+#define TFT_MISO 50
 
 #define TS_MINX 150
 #define TS_MINY 130
@@ -92,19 +92,56 @@ void menuLoop(int state) {
           }
           break;
         case 1:  //settings
-          if (y_read > 768) {
+          if (y_read < 25) {
+            y_state = (y_state - 1) % 3;
+            if (y_state<0) {y_state=1;}
+            prev_input = curr_input;
+            interval += 100;
+            if (interval >2000) {interval = 2000;}
+            lcdMenu(state,interval);
+          }
+          else if (y_read < 127) {
+            y_state = (y_state - 1) % 3;
+            if (y_state<0) {y_state=1;}
+            prev_input = curr_input;
+            interval += 10;
+            if (interval >2000) {interval = 2000;}
+            lcdMenu(state,interval);
+          }
+          else if (y_read < 500) {
+            y_state = (y_state - 1) % 3;
+            if (y_state<0) {y_state=1;}
+            prev_input = curr_input;
+            interval += 1;
+            if (interval >2000) {interval = 200;}
+            lcdMenu(state,interval);
+          } 
+          else if (y_read > 1000) {
             y_state = (y_state + 1) % 3;
             prev_input = curr_input;
+            interval -= 100;
+            if (interval <1) {interval = 1;}
             lcdMenu(state,interval);
-          } else if (y_read < 256) {
+          }
+          else if (y_read > 768) {
             y_state = (y_state - 1) % 3;
             if (y_state < 0) { y_state = y_state + 3; }
             prev_input = curr_input;
+            interval -= 10;
+            if (interval <1) {interval = 1;}
             lcdMenu(state,interval);
           }
+          else if (y_read > 600) {
+            y_state = (y_state + 1) % 3;
+            prev_input = curr_input;
+            interval -= 1;
+            if (interval <1) {interval = 1;}
+            lcdMenu(state,interval);
+          }
+          delay(200);
           break;
         case 2:  //reset
-          if (sw_read==0) {resetMotors();}
+          if (sw_read==0) {lcdResetMotors(); moveManual();}
           lcdMenu(state,interval);
       }
     }

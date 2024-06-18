@@ -16,7 +16,7 @@ LiquidCrystal lcd(rs, enable, d4, d5, d6, d7);
 
 // Machine state
 int machineOn = 1;
-char *list_of_states[] = {"compress", "moving", "indent", "camera"};
+char *list_of_states[] = {"moving #1", "compress", "moving #2", "indent", "moving #3", "camera"};
 unsigned long startMillis;
 unsigned long currentMillis;
 unsigned long buttonCoolDown;
@@ -128,7 +128,6 @@ void lcdLoop(long init_time, int machine_state) {
   // button cool down code when pressed, toggles lcd
   if (currentMillis-buttonCoolDown >= 1000) {
     if (input == 0) {
-      toggleMachineState();
       buttonCoolDown = millis();
     }
   }
@@ -143,12 +142,10 @@ void lcdLoop(long init_time, int machine_state) {
   }
 }
 
-void toggleMachineState() {
-  machineOn = !machineOn;
-}
-
 int prev_state = -1;
+bool set = true;
 void updateLCD(long init_time, int machine_state) {
+  if (set==1) {lcd.clear(); set=false;}
   currentMillis = millis();
   if (currentMillis-startMillis <= 2000) {
     return;
@@ -164,13 +161,9 @@ void updateLCD(long init_time, int machine_state) {
   // lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Machine Status:");
-  // lcd.setCursor(0, 1);
-  // lcd.print(machineOn ? "ON" : "OFF");
-  // lcd.setCursor(8, 1);
-  // lcd.print(list_of_states[machine_state]);
   lcd.print("   ");
   if (prev_state!=machine_state) {
-    lcdProgressBar((machine_state+1)*100/5, 100, 1);
+    lcdProgressBar((machine_state)*100/5, 100, 1);
     prev_state=machine_state;
   }
   startMillis = currentMillis;
@@ -188,9 +181,7 @@ void lcdProgressBar(unsigned long count, unsigned long totalCount, int lineToPri
     }
     lcd.setCursor(number, lineToPrintOn);
     lcd.write(remainder);
-
   }
-
 }
 
 void lcdDisplayForce(double result) {
@@ -203,17 +194,27 @@ void lcdDisplayForce(double result) {
   lcd.print(result, 4);
 }
 
-String menus[3] = {"Home", "Settings", "Reset"};
+String menus[3] = {"Run", "Setting", "Reset"};
 void lcdMenu(int state, int speed) {
   lcd.clear();
-  // lcd.setCursor(0, 0);
-  // lcd.print(menus[state]+ " <==");
+  lcd.setCursor(0, 0);
+  lcd.print(menus[state]+ " <==");
   lcd.setCursor(0, 1);
   lcd.print(menus[(state+1)%3]);
   if (state==1) {
-    lcd.setCursor(0, 1);
+    lcd.setCursor(12, 0);
     lcd.print(speed);
   }
+  else if (state == 0) {
+    lcd.setCursor(12, 1);
+    lcd.print(speed);
+  }
+}
+
+void lcdResetMotors() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(" Press to quit ");
 }
 
 void updateLED() {
